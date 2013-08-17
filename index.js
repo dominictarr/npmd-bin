@@ -28,9 +28,18 @@ module.exports = function (dir, binRoot, opts, cb) {
   if(!cb) cb = opts, opts = {}
   mkdirp(binRoot, function () {
     readJson(path.resolve(dir, 'package.json'), function (err, pkg) {
-      cpara(map(pkg.bin || {}, function (v, k) {
+
+      //if pkg is just string, then assume name of bin is name of package.
+      var bin = pkg.bin || {}
+      if('string' === typeof pkg.bin) {
+        bin = {}
+        bin[pkg.name] = pkg.bin
+      }
+
+      cpara(map(bin, function (v, k) {
         var dest = path.resolve(binRoot, k)
         var src  = path.resolve(dir, v)
+
         return cseries(
           cont.to(fs.chmod)(src, 0777),
           function (cb) {
