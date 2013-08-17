@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "version": "0.0.0",
+  "description": "test bin",
+  "bin": {
+    "hello": "hello.sh",
+    "goodbye": "bye.sh"
+  }
+}
