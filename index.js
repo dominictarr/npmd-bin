@@ -28,6 +28,7 @@ var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
   if(!cb) cb = opts, opts = {}
   mkdirp(binRoot, function () {
     readJson(path.resolve(dir, 'package.json'), function (err, pkg) {
+      if(err) return cb(err.code === 'ENOENT' ? null : err)
 
       //if pkg is just string, then assume name of bin is name of package.
       var bin = pkg.bin || {}
@@ -39,6 +40,9 @@ var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
       cpara(map(bin, function (v, k) {
         var dest = path.resolve(binRoot, k)
         var src  = path.resolve(dir, v)
+
+        if(config.verbose)
+          console.error('link', dest, '->', src)
 
         return cseries(
           cont.to(fs.chmod)(src, 0777),
@@ -59,23 +63,25 @@ var all = module.exports.all = cont.to(function (dirs, binRoot, opts, cb) {
 })
 
 if(!module.parent) {
-  var opts = require('optimist').argv
-  if(opts.v || opts.version) {
+  var config = require('npmd-config')
+  if(config.version) {
     console.log(require('./package').version)
     process.exit(0)
   }
 
-  var global = opts.g || opts.global
-  var target = global
-    ? path.join(path.dirname(path.dirname(process.execPath)), 'bin')
-    : path.join(process.cwd(), 'node_modules', '.bin')
-
-  if(!opts._.length) {
+  if(!config._.length) {
     console.log('expected at least on directory link bins from')
     process.exit(1)
   }
 
-  all(opts._, target, opts, function (err, data) {
+  var modules = config._.map(function (e) {
+    if(/^[./]/.test(e)) return e
+    return config.global
+      ? path.join(config.prefix, 'lib', 'node_modules', e)
+      : path.join(process.cwd(), 'node_modules', e)
+  })
+
+  all(modules, config.bin, config, function (err, data) {
     if(err) throw err
   })
 }
