@@ -1,7 +1,7 @@
 {
   "name": "npmd-bin",
   "description": "link executables for npm modules",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/dominictarr/npmd-bin",
   "repository": {
     "type": "git",
