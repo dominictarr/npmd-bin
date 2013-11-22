@@ -26,7 +26,6 @@ function map (obj, iter) {
 
 var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
   if(!cb) cb = opts, opts = {}
-  console.log(dir, binRoot)
   mkdirp(binRoot, function () {
     readJson(path.resolve(dir, 'package.json'), function (err, pkg) {
 
@@ -36,8 +35,6 @@ var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
         bin = {}
         bin[pkg.name] = pkg.bin
       }
-
-      console.log(bin)
 
       cpara(map(bin, function (v, k) {
         var dest = path.resolve(binRoot, k)
@@ -57,7 +54,6 @@ var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
 
 var all = module.exports.all = cont.to(function (dirs, binRoot, opts, cb) {
   cpara(map(dirs, function (dir) {
-    console.log('linkBin', dir, binRoot)
     return linkBin(dir, binRoot, opts)
   })) (cb)
 })
@@ -81,6 +77,5 @@ if(!module.parent) {
 
   all(opts._, target, opts, function (err, data) {
     if(err) throw err
-    console.error(data)
   })
 }
