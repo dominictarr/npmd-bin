@@ -1,4 +1,4 @@
-
+#! /usr/bin/env node
 //create executables from package.
 var fs      = require('fs')
 var path    = require('path')
@@ -24,8 +24,9 @@ function map (obj, iter) {
   return a
 }
 
-module.exports = function (dir, binRoot, opts, cb) {
+var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
   if(!cb) cb = opts, opts = {}
+  console.log(dir, binRoot)
   mkdirp(binRoot, function () {
     readJson(path.resolve(dir, 'package.json'), function (err, pkg) {
 
@@ -35,6 +36,8 @@ module.exports = function (dir, binRoot, opts, cb) {
         bin = {}
         bin[pkg.name] = pkg.bin
       }
+
+      console.log(bin)
 
       cpara(map(bin, function (v, k) {
         var dest = path.resolve(binRoot, k)
@@ -50,5 +53,34 @@ module.exports = function (dir, binRoot, opts, cb) {
       }))(cb)
     })
   })
-}
+})
 
+var all = module.exports.all = cont.to(function (dirs, binRoot, opts, cb) {
+  cpara(map(dirs, function (dir) {
+    console.log('linkBin', dir, binRoot)
+    return linkBin(dir, binRoot, opts)
+  })) (cb)
+})
+
+if(!module.parent) {
+  var opts = require('optimist').argv
+  if(opts.v || opts.version) {
+    console.log(require('./package').version)
+    process.exit(0)
+  }
+
+  var global = opts.g || opts.global
+  var target = global
+    ? path.join(path.dirname(path.dirname(process.execPath)), 'bin')
+    : path.join(process.cwd(), 'node_modules', '.bin')
+
+  if(!opts._.length) {
+    console.log('expected at least on directory link bins from')
+    process.exit(1)
+  }
+
+  all(opts._, target, opts, function (err, data) {
+    if(err) throw err
+    console.error(data)
+  })
+}
