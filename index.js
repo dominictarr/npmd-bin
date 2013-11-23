@@ -41,7 +41,7 @@ var linkBin = module.exports = cont.to(function (dir, binRoot, opts, cb) {
         var dest = path.resolve(binRoot, k)
         var src  = path.resolve(dir, v)
 
-        if(config.verbose)
+        if(opts.verbose)
           console.error('link', dest, '->', src)
 
         return cseries(
